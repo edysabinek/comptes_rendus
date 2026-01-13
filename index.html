@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Journal Spirituel</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <h1>Mon Journal Spirituel</h1>
+
+    <label for="month">Mois (MM-AAAA) :</label>
+    <input type="text" id="month" placeholder="01-2026">
+
+    <label for="noteInput">Coller le contenu Samsung Note :</label>
+    <textarea id="noteInput" rows="15" placeholder="Collez votre texte ici"></textarea>
+
+    <button id="saveBtn">Enregistrer dans le navigateur</button>
+    <button id="generateBtn">Générer Excel</button>
+
+    <p id="status"></p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
