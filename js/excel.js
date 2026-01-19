@@ -48,7 +48,7 @@ function aggregate(d, r, semaineTotal, moisTotal) {
   if (r.Activité === 'LB') {
 
     let chaps = countChapters(r['Commentaire']);
-    d.LB_livres = r['Commentaire'];
+    d.LB_livres = d.LB_livres + '\n' + r['Commentaire'];
     d.LB_NB += chaps;
     d.LB_Duree += min;
 

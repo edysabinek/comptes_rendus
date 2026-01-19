@@ -13,10 +13,9 @@ export function parseSamsungNote(text, year, month) {
     const date = `${day}/${month}/${year}`;
 
     // LB
-    const lb = block.match(/LB\s*=\s*(\d{2}h\d{2})\s*-\s*(\d{2}h\d{2})\s*:\s*([A-z0-9 -]*?)(?:\r?\n|$)/i);
-    if (lb) {
-      activities.push(row(date, day, 'LB', lb[1], lb[2], lb[3]));
-    }
+       extract(block, /LB\s*=\s*(\d{2}h\d{2})\s*-\s*(\d{2}h\d{2})\s*:\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
+          m => activities.push(row(date, day, 'LB', m[1], m[2], m[3]))
+      );
 
     // PS
     extract(block, /PS\s*=\s*(\d{2}h\d{2})\s*-\s*(\d{2}h\d{2})\s*:?\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
