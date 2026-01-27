@@ -13,27 +13,27 @@ export function parseSamsungNote(text, year, month) {
     const date = `${day}/${month}/${year}`;
 
     // LB
-       extract(block, /LB\s*=\s*(\d{2}h\d{2})\s*-\s*(\d{2}h\d{2})\s*:\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
+       extract(block, /LB\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
           m => activities.push(row(date, day, 'LB', m[1], m[2], m[3]))
       );
 
     // PS
-    extract(block, /PS\s*=\s*(\d{2}h\d{2})\s*-\s*(\d{2}h\d{2})\s*:?\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
+    extract(block, /PS\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:?\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
       m => activities.push(row(date, day, 'PS', m[1], m[2], m[3]))
     );
 
     // ADG
-    extract(block, /ADG\s*=\s*(\d{2}h\d{2})\s*-\s*(\d{2}h\d{2})\s*:?\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
+    extract(block, /ADG\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:?\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
       m => activities.push(row(date, day, 'ADG', m[1], m[2], m[3]))
     );
 
     // RDQD
-    extract(block, /RDQD\s*=\s*(\d{2}h\d{2})\s*-\s*(\d{2}h\d{2})\s*:?\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
+    extract(block, /RDQD\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:?\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
       m => activities.push(row(date, day, 'RDQD', m[1], m[2], m[3]))
     );
 
     // PEG
-    extract(block, /(Matin|Culte F|Autre)\s*=\s*(\d{2}h\d{2})\s*-\s*(\d{2}h\d{2})/gi,
+    extract(block, /(Matin|Culte F|Autre)\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})/gi,
       m => activities.push(row(date, day, `PEG_${normalize(m[1])}`, m[2], m[3], ''))
     );
 
