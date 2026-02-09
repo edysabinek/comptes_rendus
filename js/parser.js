@@ -12,23 +12,23 @@ export function parseSamsungNote(text, year, month) {
     const day = dayMatch[1];
     const date = `${day}/${month}/${year}`;
 
-    // LB
-       extract(block, /LB\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
-          m => activities.push(row(date, day, 'LB', m[1], m[2], m[3]))
-      );
+    // LB : ([\p{L}0-9 -_|+*]*?)
+    extract(block, /LB\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:\s*([\p{L}0-9 -_|+*]*?)(?:\r?\n|$)/giu,
+      m => activities.push(row(date, day, 'LB', m[1], m[2], m[3]))
+    );
 
-    // PS
-    extract(block, /PS\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:?\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
+    // PS (capture le commentaire pour extraction de thème)
+    extract(block, /PS\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:?\s*([\p{L}0-9 -_|+*]*?)(?:\r?\n|$)/giu,
       m => activities.push(row(date, day, 'PS', m[1], m[2], m[3]))
     );
 
     // ADG
-    extract(block, /ADG\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:?\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
+    extract(block, /ADG\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})/gi,
       m => activities.push(row(date, day, 'ADG', m[1], m[2], m[3]))
     );
 
     // RDQD
-    extract(block, /RDQD\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:?\s*([A-z0-9 -]*?)(?:\r?\n|$)/gi,
+    extract(block, /RDQD\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:?\s*([\p{L}0-9 -_|+*]*?)(?:\r?\n|$)/giu,
       m => activities.push(row(date, day, 'RDQD', m[1], m[2], m[3]))
     );
 
@@ -42,6 +42,22 @@ export function parseSamsungNote(text, year, month) {
       m => activities.push(row(date, day, 'LLC', m[1], m[2], m[3]))
     );
 
+    // LLC : Nom du livre.
+    let livre = block.match(/Livre\s*=\s*([\p{L}0-9 -_|+*]*?)(?:\r?\n|$)/iu);
+    if (livre) {
+        activities.push({
+                            Date: date,
+                            Jour: day,
+                            Activité: 'Livre',
+                            Accomplie: 1,
+                            Heure_Debut: '00h00',
+                            Heure_Fin: '00h00',
+                            Duree: '00h00',
+                            Duree_minutes: 0,
+                            'Commentaire': livre[1]
+                          })
+    }
+
     // EV
     extract(block, /EV\s*=\s*(\d{2}h\d{2})\s*-\s*(\d{2}h\d{2})/gi,
       m => activities.push(row(date, day, 'EV', m[1], m[2], ''))
@@ -49,11 +65,8 @@ export function parseSamsungNote(text, year, month) {
 
     // Jeunes
     extract(block, /✅️\s*Jeune\s*=\s*(Partiel|Complet)/gi,
-          m => activities.push(applyJeuneToDay(date, day, m[1]))
+      m => activities.push(applyJeuneToDay(date, day, m[1]))
     );
-
-    // Jeunes
-    //applyJeuneToDay(activities, block)
   });
 
   return activities;
@@ -81,15 +94,14 @@ function duration_minutes(s, e) {
 }
 
 function duration(s, e) {
-  const m = duration_minutes(s, e)
+  const m = duration_minutes(s, e);
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 }
 
 function activity_done(s, e) {
-    const m = duration_minutes(s, e)
-    if (m == 0) return 0 ;
-
-    return 1;
+  const m = duration_minutes(s, e);
+  if (m == 0) return 0;
+  return 1;
 }
 
 function extract(text, regex, cb) {
@@ -101,11 +113,10 @@ function normalize(str) {
 }
 
 function applyJeuneToDay(date, day, comment) {
-
-  let activite = 'JP'
+  let activite = 'JP';
 
   if (comment.toLowerCase() === 'complet') {
-    activite = 'JC'
+    activite = 'JC';
   }
   return {
     Date: date,
@@ -116,6 +127,6 @@ function applyJeuneToDay(date, day, comment) {
     Heure_Fin: '00:00',
     Duree: '00:00',
     Duree_minutes: 0,
-    'Commentaire': 'Jeune '+comment?.trim() || ''
+    'Commentaire': 'Jeune ' + comment?.trim() || ''
   };
 }
