@@ -265,6 +265,8 @@ function calculateWeeklySummary(entries) {
     const minutes = entry.Duree_minutes || 0;
 
     if (entry.Activité === 'LB') {
+      console.log(entry.Commentaire)
+      // console.log(countChapters(entry.Commentaire))
       summary.LB.nb += countChapters(entry.Commentaire);
       summary.LB.duree += minutes;
     }
@@ -795,11 +797,72 @@ function getMonthName(month) {
   return names[month - 1];
 }
 
-function countChapters(txt) {
+function parseChapterCountOld(txt) {
   const m = txt.match(/(\d+)\s*(?:-|a|à)*\s*(\d*)/i);
   if (!m) return 0;
   if (m[1] && !m[2]) return 1;
   return Number(m[2]) - Number(m[1]) + 1;
+}
+
+/**
+ * Calcule le nombre de chapitres lus à partir d'une ligne de lecture biblique.
+ *
+ * Format attendu : "LB = 08h08 - 09h17 : 1Tes 1-5, 2Thes 1-3, 1Tim 1-6"
+ *
+ * Cas supportés :
+ *  - Plage de chapitres  : "1Tes 1-5"  → 5 chapitres
+ *  - Chapitre unique     : "Jn 3"      → 1 chapitre
+ *  - Livre seul (1 chap) : "Phm"       → 1 chapitre
+ *
+ * Séparateurs acceptés entre les livres : virgule (,) ou point-virgule (;)
+ *
+ * @param {string} txt - Le commentaire texte de ligne LB
+ * @returns {number} Le nombre total de chapitres lus, ou 0 si la ligne est invalide
+ */
+function countChapters(txt) {
+  // Découper par virgule ou point-virgule
+  const references = txt
+      .split(/[,;]/)
+      .map((ref) => ref.trim())
+      .filter(Boolean);
+  console.log(references)
+  let totalChapters = 0;
+
+  for (const ref of references) {
+    totalChapters += parseChapterCount(ref);
+
+  }
+
+  return totalChapters;
+}
+
+/**
+ * Calcule le nombre de chapitres pour une seule référence biblique.
+ *
+ * @param {string} ref - Ex: "1Tes 1-5", "Jn 3", "Phm"
+ * @returns {number}
+ */
+function parseChapterCount(ref) {
+  // Capturer : [livre] [début[-fin]]
+  // Livre    : lettres, chiffres, points (ex: 1Tes, 2Co, Ph, Ps)
+  // Chapitres: nombre optionnel, avec plage optionnelle (ex: 1-5, 3)
+  const match = ref.match(/^[\w.]+(?:\s*(\d+)\s*(?:[-|a|à]\s*(\d+))?)?$/i);
+  console.log(match)
+  if (!match) return 0;
+
+
+  const [, startStr, endStr] = match;
+
+  // Ni début ni fin → livre à un seul chapitre (ex: "Phm", "Jud")
+  if (!startStr) return 1;
+
+  const start = parseInt(startStr, 10);
+  const end = endStr ? parseInt(endStr, 10) : start;
+
+  // Plage invalide (ex: "5-3")
+  if (end < start) return 0;
+
+  return end - start + 1;
 }
 
 function countPages(txt) {
