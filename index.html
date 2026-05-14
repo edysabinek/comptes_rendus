@@ -1,198 +1,236 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes CRs</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=DM+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
-<div class="background-gradient"></div>
+    <div class="background-gradient"></div>
 
-<div class="container">
-    <header class="header">
-        <div class="header-icon">📈</div>
-        <h1>Mes comptes rendus</h1>
-        <p class="subtitle">Rendez compte plus facilement</p>
-    </header>
+    <div class="container">
+        <header class="header">
+            <div class="header-icon">📈</div>
+            <h1>Mes comptes rendus</h1>
+            <p class="subtitle">Rendez compte plus facilement</p>
+        </header>
 
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="saisie">
-            <span class="tab-icon">📝</span>
-            <span>Saisie</span>
-        </button>
-        <button class="tab-btn" data-tab="themes">
-            <span class="tab-icon">🏷️</span>
-            <span>Thèmes</span>
-        </button>
-        <button class="tab-btn" data-tab="analyse">
-            <span class="tab-icon">📊</span>
-            <span>Analyse</span>
-        </button>
-    </div>
-
-    <!-- TAB 1: SAISIE -->
-    <div class="tab-content active" id="saisie">
-        <div class="card">
-            <div class="card-header">
-                <span class="card-icon">📅</span>
-                <h2>Période de saisie</h2>
-            </div>
-            <div class="row">
-                <div class="col col-md-6 form-group">
-                    <label for="year">Année</label>
-                    <input type="number" id="year" placeholder="2026" class="input-field" style="max-width: 150px;">
-                </div>
-                <div class="col col-md-6 form-group">
-                    <label for="month">Mois</label>
-                    <input type="number" id="month" placeholder="01" class="input-field" style="max-width: 150px;">
-                </div>
-            </div>
-            <p class="info-text">
-                Collez vos notes de la semaine (du lundi au dimanche) ou vos notes du mois. Le total s'affichera automatiquement ci-dessous.
-            </p>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span class="card-icon">📖</span>
-                <h2>Notes</h2>
-            </div>
-            <div class="form-group">
-                <textarea id="noteInput" rows="15" placeholder="Collez vos notes ici..." class="textarea-field"></textarea>
-                <div class="char-counter">
-                    <span id="charCount">0</span> caractères
-                </div>
-                <button id="btnVider" onclick="document.getElementById('noteInput').value = '';" >Effacer</button>
-            </div>
-        </div>
-
-        <div class="action-buttons">
-            <button id="saveBtn" class="btn btn-primary">
-                <span class="btn-icon">💾</span>
-                Enregistrer
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="saisie">
+                <span class="tab-icon">📝</span>
+                <span>Saisie</span>
+            </button>
+            <button class="tab-btn" data-tab="themes">
+                <span class="tab-icon">🏷️</span>
+                <span>Thèmes</span>
+            </button>
+            <button class="tab-btn" data-tab="analyse">
+                <span class="tab-icon">📊</span>
+                <span>Analyse</span>
             </button>
         </div>
-        <div id="status" class="status-message"></div>
 
-        <!-- RÉSUMÉ HEBDOMADAIRE -->
-        <div id="weeklySummary"></div>
-
-        <div class="card excel-export-card">
-            <div class="card-header">
-                <span class="card-icon">📊</span>
-                <h2>Exporter en Excel</h2>
+        <!-- TAB 1: SAISIE -->
+        <div class="tab-content active" id="saisie">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📅</span>
+                    <h2>Période de saisie</h2>
+                </div>
+                <div class="row">
+                    <div class="col col-md-6 form-group">
+                        <label for="year">Année</label>
+                        <input type="number" id="year" placeholder="2026" class="input-field">
+                    </div>
+                    <div class="col col-md-6 form-group">
+                        <label for="month">Mois</label>
+                        <input type="number" id="month" placeholder="01" class="input-field">
+                    </div>
+                </div>
+                <p class="info-text">
+                    Collez vos notes de la semaine (du lundi au dimanche) ou vos notes du mois. Le total s'affichera
+                    automatiquement ci-dessous.
+                </p>
             </div>
-            <div class="export-buttons">
-                <button id="generateMonthBtn" class="btn btn-secondary">
-                    <span class="btn-icon">📄</span>
-                    Export mensuel
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📖</span>
+                    <h2>Notes</h2>
+                </div>
+                <div class="form-group">
+                    <textarea id="noteInput" rows="15" placeholder="Collez vos notes ici..."
+                        class="textarea-field"></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span> caractères
+                    </div>
+                    <button id="btnVider" onclick="document.getElementById('noteInput').value = '';">Effacer</button>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="saveBtn" class="btn btn-primary">
+                    <span class="btn-icon">💾</span>
+                    Enregistrer
                 </button>
-                <button id="generateYearBtn" class="btn btn-secondary">
-                    <span class="btn-icon">📅</span>
-                    Export annuel
+            </div>
+            <div id="status" class="status-message"></div>
+
+            <!-- RÉSUMÉ HEBDOMADAIRE -->
+            <div id="weeklySummary"></div>
+
+            <div class="card excel-export-card">
+                <div class="card-header">
+                    <span class="card-icon">📊</span>
+                    <h2>Exporter en Excel</h2>
+                </div>
+                <div class="export-buttons">
+                    <button id="generateMonthBtn" class="btn btn-secondary">
+                        <span class="btn-icon">📄</span>
+                        Export mensuel
+                    </button>
+                    <button id="generateYearBtn" class="btn btn-secondary">
+                        <span class="btn-icon">📅</span>
+                        Export annuel
+                    </button>
+                </div>
+            </div>
+
+            <div class="action-buttons backup-actions">
+                <button id="backupBtn" class="btn btn-secondary">
+                    <span class="btn-icon">📥</span>
+                    Télécharger backup
                 </button>
+                <button id="restoreBtn" class="btn btn-secondary">
+                    <span class="btn-icon">📤</span>
+                    Restaurer backup
+                </button>
+                <input type="file" id="restoreFile" accept=".json" style="display: none;">
             </div>
         </div>
 
-        <div class="action-buttons">
-            <button id="backupBtn" class="btn btn-secondary" style="max-width: 200px;">
-                <span class="btn-icon">📥</span>
-                Télécharger backup
-            </button>
-            <button id="restoreBtn" class="btn btn-secondary" style="max-width: 200px;">
-                <span class="btn-icon">📤</span>
-                Restaurer backup
-            </button>
-            <input type="file" id="restoreFile" accept=".json" style="display: none;">
-        </div>
-    </div>
+        <!-- TAB 2: GESTION DES THÈMES -->
+        <div class="tab-content" id="themes">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🏷️</span>
+                    <h2>Gérer les sujets de prière</h2>
+                </div>
+                <p class="info-text">
+                    Définissez les sujets de prière que vous souhaitez suivre statistiquement.
+                    L'application détectera automatiquement ces sujets dans vos commentaires de prière (PS).
+                </p>
 
-    <!-- TAB 2: GESTION DES THÈMES -->
-    <div class="tab-content" id="themes">
-        <div class="card">
-            <div class="card-header">
-                <span class="card-icon">🏷️</span>
-                <h2>Gérer les sujets de prière</h2>
-            </div>
-            <p class="info-text">
-                Définissez les sujets de prière que vous souhaitez suivre statistiquement.
-                L'application détectera automatiquement ces sujets dans vos commentaires de prière (PS).
-            </p>
+                <div class="theme-input-group">
+                    <input type="text" id="newTheme"
+                        placeholder="Nouveau sujet (ex: Dirigeants, Retraite_matin, Moi...)" class="input-field">
+                    <input type="color" id="themeColor" value="#6366f1" class="color-picker">
+                    <button id="addThemeBtn" class="btn btn-primary">
+                        <span class="btn-icon">➕</span>
+                        Ajouter
+                    </button>
+                </div>
 
-            <div class="theme-input-group">
-                <input type="text" id="newTheme" placeholder="Nouveau sujet (ex: Dirigeants, Retraite_matin, Moi...)" class="input-field">
-                <input type="color" id="themeColor" value="#6366f1" class="color-picker">
-                <button id="addThemeBtn" class="btn btn-primary">
-                    <span class="btn-icon">➕</span>
-                    Ajouter
-                </button>
+                <div id="themesList" class="themes-list"></div>
             </div>
 
-            <div id="themesList" class="themes-list"></div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span class="card-icon">ℹ️</span>
-                <h2>Comment ça fonctionne</h2>
-            </div>
-            <div class="help-content">
-                <p><strong>Format dans vos notes  :</strong></p>
-                <pre>PS = 08h36 a 09h05 : Retraite_matin
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">ℹ️</span>
+                    <h2>Comment ça fonctionne</h2>
+                </div>
+                <div class="help-content">
+                    <p><strong>Format dans vos notes :</strong></p>
+                    <pre>PS = 08h36 a 09h05 : Retraite_matin
 PS = 13h10 à 13h47 : Dirigeants
 PS = 05h05 - 05h17 : Moi
                 </pre>
 
-                <p class="mt-3"><strong>Sujets suivis :</strong></p>
-                <div id="themesHelp" class="themes-help"></div>
+                    <p class="mt-3"><strong>Sujets suivis :</strong></p>
+                    <div id="themesHelp" class="themes-help"></div>
 
-                <p class="mt-3"><strong>Détection automatique :</strong></p>
-                <p>L'application détecte le nom du sujet dans le commentaire après ":" de chaque ligne PS. Les statistiques apparaîtront dans le résumé hebdomadaire et dans l'Excel.</p>
+                    <p class="mt-3"><strong>Détection automatique :</strong></p>
+                    <p>L'application détecte le nom du sujet dans le commentaire après ":" de chaque ligne PS. Les
+                        statistiques apparaîtront dans le résumé hebdomadaire et dans l'Excel.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: ANALYSE -->
+        <div class="tab-content" id="analyse">
+            <!-- NOUVEAU: Statistiques sur période personnalisée -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📅</span>
+                    <h2>Statistiques Globales par Période</h2>
+                </div>
+                <p class="info-text">Sélectionnez une période pour afficher le résumé global (Lecture, Prière, etc.) sur
+                    ces dates.</p>
+                <div class="row">
+                    <div class="col col-md-5 form-group">
+                        <label for="customStartDate">Date de début</label>
+                        <input type="date" id="customStartDate" class="input-field">
+                    </div>
+                    <div class="col col-md-5 form-group">
+                        <label for="customEndDate">Date de fin</label>
+                        <input type="date" id="customEndDate" class="input-field">
+                    </div>
+                    <div class="col col-md-2 form-group" style="display: flex; align-items: flex-end;">
+                        <button id="showCustomStatsBtn" class="btn btn-primary"
+                            style="width: 100%; padding: 0.875rem 1rem;">
+                            <span class="btn-icon">📊</span>
+                            Calculer
+                        </button>
+                    </div>
+                </div>
+                <div id="customPeriodSummary"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📊</span>
+                    <h2>Analyse des sujets de prière</h2>
+                </div>
+
+                <div class="analysis-controls">
+                    <select id="analysisPeriod" class="input-field">
+                        <option value="week">7 derniers jours glissants</option>
+                        <option value="month">Ce mois</option>
+                        <option value="year">Cette année</option>
+                    </select>
+                    <button id="analyzeBtn" class="btn btn-primary">
+                        <span class="btn-icon">🔍</span>
+                        Analyser
+                    </button>
+                </div>
+
+                <div id="analysisResults" class="analysis-results">
+                    <p class="empty-state">Cliquez sur "Analyser" pour voir la répartition du temps de prière par sujet
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📈</span>
+                    <h2>Graphique de répartition</h2>
+                </div>
+                <canvas id="themeChart" width="400" height="300"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- TAB 3: ANALYSE -->
-    <div class="tab-content" id="analyse">
-        <div class="card">
-            <div class="card-header">
-                <span class="card-icon">📊</span>
-                <h2>Analyse par sujets de prière</h2>
-            </div>
-
-            <div class="analysis-controls">
-                <select id="analysisPeriod" class="input-field">
-                    <option value="week">7 derniers jours glissants</option>
-                    <option value="month">Ce mois</option>
-                    <option value="year">Cette année</option>
-                </select>
-                <button id="analyzeBtn" class="btn btn-primary">
-                    <span class="btn-icon">🔍</span>
-                    Analyser
-                </button>
-            </div>
-
-            <div id="analysisResults" class="analysis-results">
-                <p class="empty-state">Cliquez sur "Analyser" pour voir la répartition du temps de prière par sujet</p>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span class="card-icon">📈</span>
-                <h2>Graphique de répartition</h2>
-            </div>
-            <canvas id="themeChart" width="400" height="300"></canvas>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-<script type="module" src="js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
+
 </html>

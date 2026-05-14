@@ -1,5 +1,6 @@
 // excel.js
 // Génération Excel avec ExcelJS (support couleurs personnalisées)
+import { countChapters, countPages } from './app.js';
 export function parseFRDate(dateStr) {
   const [day, month, year] = dateStr.split('/');
   return new Date(year, month - 1, day);
@@ -477,18 +478,6 @@ function aggregate(d, r, semaineTotal, moisTotal) {
   }
 }
 
-function countChapters(txt) {
-  const m = txt.match(/(\d+)\s*(?:-|a|à)*\s*(\d*)/i);
-  if (!m) return 0;
-  if (m[1] && !m[2]) return 1;
-  return Number(m[2]) - Number(m[1]) + 1;
-}
-
-function countPages(txt) {
-  const m = txt.match(/p\s*(\d*)\s-\s*p\s*(\d*)/i);
-  if (!m) return 0;
-  return Number(m[2]) - Number(m[1]) + 1;
-}
 
 function aggregate_all_with_iso_weeks(journal) {
   let byDay = {};

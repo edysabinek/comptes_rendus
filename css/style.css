@@ -717,19 +717,37 @@ code {
     }
 
     .header h1 {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
 
     .tabs {
-        flex-direction: column;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+        /* Masquer la scrollbar */
+        scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar {
+        display: none;
     }
 
     .tab-btn {
-        justify-content: flex-start;
+        flex: 1;
+        min-width: max-content;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
     }
 
     .action-buttons {
         flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 1.2rem;
     }
 
     .theme-input-group {
@@ -750,5 +768,13 @@ code {
 
     .export-buttons {
         grid-template-columns: 1fr;
+    }
+    
+    .row {
+        flex-direction: column;
+    }
+    .col {
+        width: 100%;
+        margin-bottom: 1rem;
     }
 }

@@ -72,7 +72,7 @@ document.getElementById('saveBtn').onclick = () => {
   // Demander le mois
   let month = monthInput.value
   if (!month) {
-     month = prompt('Veuillez précisez le mois : Entre (01-12)', new Date().getMonth() + 1);
+    month = prompt('Veuillez précisez le mois : Entre (01-12)', new Date().getMonth() + 1);
   }
   if (!month) return;
   monthInput.value = month;
@@ -104,94 +104,35 @@ document.getElementById('saveBtn').onclick = () => {
 
   saveJournal();
 
-  // Déterminer le type de période et afficher le résumé approprié
-  if (daysDiff >= 1 && daysDiff <= 7) {
-    // Semaine
-    const weekNumber = getISOWeek(minDate);
-    const weekRange = getWeekRange(minDate);
-    displayWeeklySummary(parsed, weekNumber, weekRange);
-    showStatus(`✓ ${parsed.length} entrées sauvegardées (Semaine ${weekNumber})`, 'success');
-  } else if (daysDiff >= 20 && daysDiff <= 31) {
-    // Mois
-    displayMonthlySummary(parsed, month);
-    showStatus(`✓ ${parsed.length} entrées sauvegardées (Mois ${month})`, 'success');
-  } else {
-    // Autre
-    showStatus(`✓ ${parsed.length} entrées sauvegardées (${daysDiff} jours)`, 'success');
-    const range = `${formatDate(minDate)} - ${formatDate(maxDate)}`;
-    displayWeeklySummary(parsed, "", range);
+  // Déterminer la plage de dates à afficher
+  let rangeStr = "";
+  if (minDate && maxDate) {
+    if (minDate.getTime() === maxDate.getTime()) {
+      rangeStr = formatDate(minDate);
+    } else {
+      rangeStr = `${formatDate(minDate)} - ${formatDate(maxDate)}`;
+    }
   }
+
+  showStatus(`✓ ${parsed.length} entrées sauvegardées`, 'success');
+  displaySummary(parsed, rangeStr, 'weeklySummary');
 };
 
-// === AFFICHAGE DU RÉSUMÉ HEBDOMADAIRE ===
-function displayWeeklySummary(entries, weekNumber, weekRange) {
+// === AFFICHAGE DU RÉSUMÉ ===
+function displaySummary(entries, rangeLabel, containerId = 'weeklySummary') {
   const summary = calculateWeeklySummary(entries);
-  const container = document.getElementById('weeklySummary');
+  const container = document.getElementById(containerId);
+
+  if (!container) return;
+
+  if (entries.length === 0) {
+    container.innerHTML = '<p class="empty-state">Aucune donnée pour cette période</p>';
+    return;
+  }
 
   container.innerHTML = `
     <div class="weekly-summary-card">
-      <h3>📊 TOTAL SEMAINE ${weekNumber} (${weekRange})</h3>
-
-      <div class="summary-grid">
-        <div class="summary-item">
-          <div class="summary-label">📖 Lecture Biblique</div>
-          <div class="summary-value">${summary.LB.duree} • ${summary.LB.nb} chapitres</div>
-        </div>
-
-        <div class="summary-item">
-          <div class="summary-label">🙏 Prière Seul(e)</div>
-          <div class="summary-value">${summary.PS.duree} • ${summary.PS.nb} fois</div>
-          ${summary.PS.themes.length > 0 ? `
-            <div class="summary-themes">
-              Sujets suivis:
-              ${summary.PS.themes.map(t => `
-                <div class="theme-line" style="border-left-color: ${t.color}">
-                  <span class="theme-name">${t.name}:</span>
-                  <span class="theme-time">${t.duree}</span>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-        </div>
-
-        <div class="summary-item">
-          <div class="summary-label">📿 RDQD</div>
-          <div class="summary-value">${summary.RDQD.duree} • ${summary.RDQD.nb} fois</div>
-        </div>
-
-        <div class="summary-item">
-          <div class="summary-label">⛪ PEG</div>
-          <div class="summary-value">${summary.PEG.duree} • ${summary.PEG.nb} fois</div>
-        </div>
-
-        <div class="summary-item">
-          <div class="summary-label">📚 LLC</div>
-          <div class="summary-value">${summary.LLC.duree} • ${summary.LLC.nb} pages</div>
-        </div>
-
-        <div class="summary-item">
-          <div class="summary-label">✝️ Évangélisation</div>
-          <div class="summary-value">${summary.EV.duree}</div>
-        </div>
-
-        <div class="summary-item">
-          <div class="summary-label">🍽️ Jeûnes</div>
-          <div class="summary-value">Partiel: ${summary.JP} • Complet: ${summary.JC}</div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// === AFFICHAGE DU RÉSUMÉ MENSUEL ===
-function displayMonthlySummary(entries, month) {
-  const summary = calculateWeeklySummary(entries); // Même calcul mais pour le mois
-  const monthName = getMonthName(Number.parseInt(month));
-  const container = document.getElementById('weeklySummary');
-
-  container.innerHTML = `
-    <div class="weekly-summary-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">
-      <h3>📊 TOTAL ${monthName.toUpperCase()}</h3>
+      <h3>📊 TOTAL ${rangeLabel}</h3>
 
       <div class="summary-grid">
         <div class="summary-item">
@@ -265,8 +206,6 @@ function calculateWeeklySummary(entries) {
     const minutes = entry.Duree_minutes || 0;
 
     if (entry.Activité === 'LB') {
-      console.log(entry.Commentaire)
-      // console.log(countChapters(entry.Commentaire))
       summary.LB.nb += countChapters(entry.Commentaire);
       summary.LB.duree += minutes;
     }
@@ -332,7 +271,7 @@ function calculateWeeklySummary(entries) {
 document.getElementById('generateMonthBtn').onclick = async () => {
   let month = monthInput.value
   if (!month) {
-     month = prompt('Veuillez précisez le mois : Entre (01-12)', new Date().getMonth() + 1);
+    month = prompt('Veuillez précisez le mois : Entre (01-12)', new Date().getMonth() + 1);
   }
   if (!month) return;
   monthInput.value = month;
@@ -426,6 +365,34 @@ document.getElementById('restoreFile').onchange = (e) => {
   e.target.value = '';
 };
 
+// === ANALYSE PAR PÉRIODE PERSONNALISÉE (RÉSUMÉ COMPLET) ===
+document.getElementById('showCustomStatsBtn').onclick = () => {
+  const startStr = document.getElementById('customStartDate').value;
+  const endStr = document.getElementById('customEndDate').value;
+
+  if (!startStr || !endStr) {
+    showStatus('Veuillez sélectionner les deux dates', 'error');
+    return;
+  }
+
+  const startDate = new Date(startStr);
+  const endDate = new Date(endStr);
+
+  if (startDate > endDate) {
+    showStatus('La date de début doit être antérieure à la date de fin', 'error');
+    return;
+  }
+
+  const filtered = journal.filter(entry => {
+    const [d, m, y] = entry.Date.split('/');
+    const entryDate = new Date(y, m - 1, d);
+    return entryDate >= startDate && entryDate <= endDate;
+  });
+
+  const rangeLabel = `DU ${formatDate(startDate)} AU ${formatDate(endDate)}`;
+  displaySummary(filtered, rangeLabel, 'customPeriodSummary');
+};
+
 // === ANALYSE PAR THÈMES ===
 document.getElementById('analyzeBtn').onclick = () => {
   analyzeThemes();
@@ -465,7 +432,7 @@ function filterByPeriod(data, period) {
 
     if (period === 'month') {
       return entryDate.getMonth() === now.getMonth() &&
-             entryDate.getFullYear() === now.getFullYear();
+        entryDate.getFullYear() === now.getFullYear();
     }
 
     return true;
@@ -600,7 +567,7 @@ function renderThemeChart(stats) {
         },
         tooltip: {
           callbacks: {
-            label: function(context) {
+            label: function (context) {
               const label = context.label || '';
               const value = context.parsed || 0;
               const percentage = stats[context.dataIndex].percentage.toFixed(1);
@@ -616,11 +583,11 @@ function renderThemeChart(stats) {
 // === GESTION DES THÈMES ===
 document.getElementById('generateMonthBtn').onclick = async () => {
   let month = monthInput.value
-    if (!month) {
-       month = prompt('Veuillez précisez le mois : Entre (01-12)', new Date().getMonth() + 1);
-    }
-    if (!month) return;
-    monthInput.value = month;
+  if (!month) {
+    month = prompt('Veuillez précisez le mois : Entre (01-12)', new Date().getMonth() + 1);
+  }
+  if (!month) return;
+  monthInput.value = month;
 
   const monthData = filterByMonth(journal, currentYear, Number.parseInt(month));
   if (monthData.length === 0) {
@@ -793,7 +760,7 @@ function filterByMonth(data, year, month) {
 
 function getMonthName(month) {
   const names = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-                 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
   return names[month - 1];
 }
 
@@ -819,18 +786,17 @@ function parseChapterCountOld(txt) {
  * @param {string} txt - Le commentaire texte de ligne LB
  * @returns {number} Le nombre total de chapitres lus, ou 0 si la ligne est invalide
  */
-function countChapters(txt) {
+export function countChapters(txt) {
   // Découper par virgule ou point-virgule
   const references = txt
-      .split(/[,;]/)
-      .map((ref) => ref.trim())
-      .filter(Boolean);
-  console.log(references)
+    .split(/[,;]/)
+    .map((ref) => ref.trim())
+    .filter(Boolean);
   let totalChapters = 0;
 
   for (const ref of references) {
+    console.log(ref + " = " + parseChapterCount(ref))
     totalChapters += parseChapterCount(ref);
-
   }
 
   return totalChapters;
@@ -839,25 +805,35 @@ function countChapters(txt) {
 /**
  * Calcule le nombre de chapitres pour une seule référence biblique.
  *
- * @param {string} ref - Ex: "1Tes 1-5", "Jn 3", "Phm"
+ * Stratégie : on cherche la plage numérique à la FIN de la référence,
+ * indépendamment du format du nom du livre (avec ou sans espace, préfixe chiffre).
+ *
+ * Ex : "2Cor 11-13" → 3, "1 Cor 1-6" → 6, "Gal 1-2" → 2, "Phm" → 1
+ *
+ * @param {string} ref - Ex: "1Tes 1-5", "1 Cor 1-6", "Jn 3", "Phm"
  * @returns {number}
  */
 function parseChapterCount(ref) {
-  // Capturer : [livre] [début[-fin]]
-  // Livre    : lettres, chiffres, points (ex: 1Tes, 2Co, Ph, Ps)
-  // Chapitres: nombre optionnel, avec plage optionnelle (ex: 1-5, 3)
-  const match = ref.match(/^[\w.]+(?:\s*(\d+)\s*(?:[-|a|à]\s*(\d+))?)?$/i);
-  console.log(match)
-  if (!match) return 0;
+  const trimmed = ref.trim();
+  if (!trimmed) return 0;
 
+  // Chercher une plage ou un numéro de chapitre en FIN de chaîne :
+  //   "... 11-13"  → start=11, end=13
+  //   "... 1 - 6" → start=1,  end=6
+  //   "... 3"     → start=3,  end=undefined
+  const rangeMatch = trimmed.match(/(\d+)\s*(?:[-–]\s*(\d+))?\s*$/);
 
-  const [, startStr, endStr] = match;
+  if (!rangeMatch) {
+    // Pas de chiffre du tout → livre à un seul chapitre (ex: "Phm", "Jud")
+    return 1;
+  }
 
-  // Ni début ni fin → livre à un seul chapitre (ex: "Phm", "Jud")
-  if (!startStr) return 1;
+  // Vérifier qu'il y a bien un nom de livre avant la plage (au moins 1 lettre)
+  const before = trimmed.slice(0, rangeMatch.index).trim();
+  if (!before || !/[a-zA-Z\p{L}]/u.test(before)) return 0;
 
-  const start = parseInt(startStr, 10);
-  const end = endStr ? parseInt(endStr, 10) : start;
+  const start = parseInt(rangeMatch[1], 10);
+  const end = rangeMatch[2] ? parseInt(rangeMatch[2], 10) : start;
 
   // Plage invalide (ex: "5-3")
   if (end < start) return 0;
@@ -865,7 +841,7 @@ function parseChapterCount(ref) {
   return end - start + 1;
 }
 
-function countPages(txt) {
+export function countPages(txt) {
   const m = txt.match(/p\s*(\d*)\s-\s*p\s*(\d*)/i);
   if (!m) return 0;
   return Number(m[2]) - Number(m[1]) + 1;
