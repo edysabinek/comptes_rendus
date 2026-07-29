@@ -778,3 +778,106 @@ code {
         margin-bottom: 1rem;
     }
 }
+
+/* SYNTAX ERRORS REPORT */
+.error-report-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.error-report-card.has-errors {
+    border-left: 5px solid #ef4444;
+    background: #fef2f2;
+}
+
+.error-report-card.has-warnings {
+    border-left: 5px solid #f59e0b;
+    background: #fffbeb;
+}
+
+.error-report-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.error-report-card.has-errors .error-report-header {
+    color: #991b1b;
+}
+
+.error-report-card.has-warnings .error-report-header {
+    color: #92400e;
+}
+
+.error-issue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.error-issue-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: white;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.error-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.error-badge.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.error-badge.warning {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.error-issue-content {
+    flex: 1;
+    font-size: 0.95rem;
+}
+
+.error-issue-day {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+}
+
+.error-issue-msg {
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.error-issue-line {
+    font-family: 'Courier New', monospace;
+    background: #f3f4f6;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #374151;
+    display: inline-block;
+}

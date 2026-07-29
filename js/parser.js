@@ -13,32 +13,32 @@ export function parseSamsungNote(text, year, month) {
     const date = `${day}/${month}/${year}`;
 
     // LB : ([\p{L}0-9 -_|+*]*?)
-    extract(block, /LB\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:\s*([\p{L}0-9 -_|+*]*?)(?:\r?\n|$)/giu,
+    extract(block, /LB\s*=\s*(\d{1,2}h\d{2})\s*(?:[-‐‑‒–—]|a|à)\s*(\d{1,2}h\d{2})\s*:\s*([\p{L}0-9 -_|+*]*?)(?:\r?\n|$)/giu,
       m => activities.push(row(date, day, 'LB', m[1], m[2], m[3]))
     );
 
     // PS (capture le commentaire pour extraction de thème)
-    extract(block, /PS\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:?\s*([\p{L}0-9 -_|+*]*?)(?:\r?\n|$)/giu,
+    extract(block, /PS\s*=\s*(\d{1,2}h\d{2})\s*(?:[-‐‑‒–—]|a|à)\s*(\d{1,2}h\d{2})\s*:?\s*([\p{L}0-9 -_|+*]*?)(?:\r?\n|$)/giu,
       m => activities.push(row(date, day, 'PS', m[1], m[2], m[3]))
     );
 
     // ADG
-    extract(block, /ADG\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})/gi,
+    extract(block, /ADG\s*=\s*(\d{1,2}h\d{2})\s*(?:[-‐‑‒–—]|a|à)\s*(\d{1,2}h\d{2})/gi,
       m => activities.push(row(date, day, 'ADG', m[1], m[2], m[3]))
     );
 
     // RDQD
-    extract(block, /RDQD\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*:?\s*([\p{L}0-9 -_|+*]*?)(?:\r?\n|$)/giu,
+    extract(block, /RDQD\s*=\s*(\d{1,2}h\d{2})\s*(?:[-‐‑‒–—]|a|à)\s*(\d{1,2}h\d{2})\s*:?\s*([\p{L}0-9 -_|+*]*?)(?:\r?\n|$)/giu,
       m => activities.push(row(date, day, 'RDQD', m[1], m[2], m[3]))
     );
 
     // PEG
-    extract(block, /(Matin|Culte F|Autre)\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})/gi,
+    extract(block, /(Matin|Culte F|Autre)\s*=\s*(\d{1,2}h\d{2})\s*(?:[-‐‑‒–—]|a|à)\s*(\d{1,2}h\d{2})/gi,
       m => activities.push(row(date, day, `PEG_${normalize(m[1])}`, m[2], m[3], ''))
     );
 
     // LLC
-    extract(block, /LLC\s*=\s*(\d{2}h\d{2})\s*(?:-|a|à)\s*(\d{2}h\d{2})\s*\[([^\]]*)\]/gi,
+    extract(block, /LLC\s*=\s*(\d{1,2}h\d{2})\s*(?:[-‐‑‒–—]|a|à)\s*(\d{1,2}h\d{2})\s*\[([^\]]*)\]/gi,
       m => activities.push(row(date, day, 'LLC', m[1], m[2], m[3]))
     );
 
@@ -50,16 +50,16 @@ export function parseSamsungNote(text, year, month) {
                             Jour: day,
                             Activité: 'Livre',
                             Accomplie: 1,
-                            Heure_Debut: '00h00',
-                            Heure_Fin: '00h00',
-                            Duree: '00h00',
+                            Heure_Debut: '00:00',
+                            Heure_Fin: '00:00',
+                            Duree: '00:00',
                             Duree_minutes: 0,
                             'Commentaire': livre[1]
                           })
     }
 
     // EV
-    extract(block, /EV\s*=\s*(\d{2}h\d{2})\s*-\s*(\d{2}h\d{2})/gi,
+    extract(block, /EV\s*=\s*(\d{1,2}h\d{2})\s*[-‐‑‒–—]\s*(\d{1,2}h\d{2})/gi,
       m => activities.push(row(date, day, 'EV', m[1], m[2], ''))
     );
 
@@ -79,12 +79,18 @@ function row(date, day, activity, start, end, comment) {
     Jour: day,
     Activité: activity,
     Accomplie: activity_done(start, end),
-    Heure_Debut: start.replace('h', ':'),
-    Heure_Fin: end.replace('h', ':'),
+    Heure_Debut: formatTime(start),
+    Heure_Fin: formatTime(end),
     Duree: duration(start, end),
     Duree_minutes: duration_minutes(start, end),
     'Commentaire': comment?.trim() || ''
   };
+}
+
+function formatTime(timeStr) {
+  if (!timeStr) return '00:00';
+  const [h, m] = timeStr.split('h');
+  return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
 }
 
 function duration_minutes(s, e) {

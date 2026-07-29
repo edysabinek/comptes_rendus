@@ -1,5 +1,6 @@
 import { parseSamsungNote } from './parser.js';
 import { generateExcel, parseFRDate } from './excel.js';
+import { validateSamsungNote } from './validator.js';
 
 // === ÉTAT GLOBAL ===
 let journal = [];
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderThemesList();
   renderThemesHelp();
   updateYearInput();
+  initializeAnalysisControls();
 });
 
 // === GESTION DES ONGLETS ===
@@ -54,8 +56,12 @@ yearInput.addEventListener('change', () => {
   loadJournal();
 });
 
-// === COMPTEUR DE CARACTÈRES ===
-input.addEventListener('input', updateCharCount);
+// === COMPTEUR DE CARACTÈRES ET VALIDATION EN DIRECT ===
+input.addEventListener('input', () => {
+  updateCharCount();
+  const issues = validateSamsungNote(input.value);
+  renderErrorReport(issues);
+});
 
 function updateCharCount() {
   charCount.textContent = input.value.length.toLocaleString();
@@ -66,6 +72,16 @@ document.getElementById('saveBtn').onclick = () => {
   const noteText = input.value.trim();
   if (!noteText) {
     showStatus('Veuillez coller vos notes', 'error');
+    return;
+  }
+
+  // Valider et remonter les erreurs de saisie
+  const issues = validateSamsungNote(noteText);
+  renderErrorReport(issues);
+
+  const hasCriticalErrors = issues.some(i => i.type === 'error');
+  if (hasCriticalErrors) {
+    showStatus('❌ Enregistrement bloqué : Veuillez corriger les durées négatives ou erreurs d\'heures ci-dessus.', 'error');
     return;
   }
 
@@ -89,7 +105,6 @@ document.getElementById('saveBtn').onclick = () => {
   const dates = parsed.map(p => parseFRDate(p.Date));
   const minDate = new Date(Math.min(...dates));
   const maxDate = new Date(Math.max(...dates));
-  const daysDiff = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1;
 
   // Supprimer les anciennes entrées de cette période pour éviter les doublons
   const existingEntries = journal.filter(entry => {
@@ -114,9 +129,63 @@ document.getElementById('saveBtn').onclick = () => {
     }
   }
 
-  showStatus(`✓ ${parsed.length} entrées sauvegardées`, 'success');
+  if (issues.some(i => i.type === 'warning')) {
+    showStatus(`⚠️ ${parsed.length} entrées sauvegardées avec des avertissements de saisie.`, 'success');
+  } else {
+    showStatus(`✓ ${parsed.length} entrées sauvegardées avec succès !`, 'success');
+  }
+
   displaySummary(parsed, rangeStr, 'weeklySummary');
 };
+
+function renderErrorReport(issues) {
+  const container = document.getElementById('syntaxErrorsReport');
+  if (!container) return;
+
+  if (!issues || issues.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const errorsCount = issues.filter(i => i.type === 'error').length;
+  const warningsCount = issues.filter(i => i.type === 'warning').length;
+
+  const cardClass = errorsCount > 0 ? 'has-errors' : 'has-warnings';
+  const icon = errorsCount > 0 ? '🚫' : '⚠️';
+  const title = errorsCount > 0
+    ? `${errorsCount} erreur(s) bloquante(s) de saisie`
+    : `${warningsCount} avertissement(s) de formatage`;
+
+  container.innerHTML = `
+    <div class="error-report-card ${cardClass}">
+      <div class="error-report-header">
+        <span>${icon}</span>
+        <span>${title}</span>
+      </div>
+      <div class="error-issue-list">
+        ${issues.map(issue => `
+          <div class="error-issue-item">
+            <span class="error-badge ${issue.type}">${issue.type === 'error' ? 'Bloquant' : 'Attention'}</span>
+            <div class="error-issue-content">
+              <div class="error-issue-day">${issue.day}</div>
+              <div class="error-issue-msg">${issue.message}</div>
+              <div class="error-issue-line"><code>${escapeHtml(issue.line)}</code></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 // === AFFICHAGE DU RÉSUMÉ ===
 function displaySummary(entries, rangeLabel, containerId = 'weeklySummary') {
@@ -375,44 +444,127 @@ document.getElementById('showCustomStatsBtn').onclick = () => {
     return;
   }
 
-  const startDate = new Date(startStr);
-  const endDate = new Date(endStr);
-
-  if (startDate > endDate) {
-    showStatus('La date de début doit être antérieure à la date de fin', 'error');
+  if (startStr > endStr) {
+    showStatus('La date de début doit être antérieure ou égale à la date de fin', 'error');
     return;
   }
 
   const filtered = journal.filter(entry => {
     const [d, m, y] = entry.Date.split('/');
-    const entryDate = new Date(y, m - 1, d);
-    return entryDate >= startDate && entryDate <= endDate;
+    const entryDateStr = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    return entryDateStr >= startStr && entryDateStr <= endStr;
   });
 
-  const rangeLabel = `DU ${formatDate(startDate)} AU ${formatDate(endDate)}`;
+  const [startY, startM, startD] = startStr.split('-');
+  const [endY, endM, endD] = endStr.split('-');
+  const rangeLabel = `DU ${startD}/${startM} AU ${endD}/${endM}`;
   displaySummary(filtered, rangeLabel, 'customPeriodSummary');
 };
 
 // === ANALYSE PAR THÈMES ===
-document.getElementById('analyzeBtn').onclick = () => {
-  analyzeThemes();
-};
+function initializeAnalysisControls() {
+  const analysisPeriodSelect = document.getElementById('analysisPeriod');
+  const prayerCustomDatesDiv = document.getElementById('prayerCustomDates');
+  const prayerStartDateInput = document.getElementById('prayerStartDate');
+  const prayerEndDateInput = document.getElementById('prayerEndDate');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+
+  if (!analysisPeriodSelect || !prayerCustomDatesDiv) return;
+
+  function updateCustomDatesVisibility() {
+    if (analysisPeriodSelect.value === 'custom') {
+      prayerCustomDatesDiv.style.display = 'flex';
+      if (prayerStartDateInput.value && prayerEndDateInput.value) {
+        handlePrayerCustomDateChange();
+      }
+    } else {
+      prayerCustomDatesDiv.style.display = 'none';
+    }
+  }
+
+  analysisPeriodSelect.addEventListener('change', () => {
+    updateCustomDatesVisibility();
+    if (analysisPeriodSelect.value !== 'custom') {
+      analyzeThemes();
+    }
+  });
+
+  if (analyzeBtn) {
+    analyzeBtn.onclick = () => {
+      analyzeThemes();
+    };
+  }
+
+  function handlePrayerCustomDateChange() {
+    const startStr = prayerStartDateInput.value;
+    const endStr = prayerEndDateInput.value;
+
+    if (startStr && endStr) {
+      if (startStr > endStr) {
+        showStatus('La date de début doit être antérieure ou égale à la date de fin', 'error');
+        return;
+      }
+      analyzeThemes();
+    }
+  }
+
+  if (prayerStartDateInput && prayerEndDateInput) {
+    prayerStartDateInput.addEventListener('change', handlePrayerCustomDateChange);
+    prayerEndDateInput.addEventListener('change', handlePrayerCustomDateChange);
+    prayerStartDateInput.addEventListener('input', handlePrayerCustomDateChange);
+    prayerEndDateInput.addEventListener('input', handlePrayerCustomDateChange);
+  }
+
+  // Initialiser l'état selon la sélection au chargement
+  updateCustomDatesVisibility();
+}
 
 function analyzeThemes() {
   const period = document.getElementById('analysisPeriod').value;
+  let rangeLabel = '';
+
+  if (period === 'week') {
+    rangeLabel = '7 derniers jours glissants';
+  } else if (period === 'month') {
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    const now = new Date();
+    rangeLabel = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+  } else if (period === 'year') {
+    rangeLabel = `Année ${currentYear}`;
+  } else if (period === 'custom') {
+    const startStr = document.getElementById('prayerStartDate')?.value;
+    const endStr = document.getElementById('prayerEndDate')?.value;
+    if (!startStr || !endStr) {
+      document.getElementById('analysisResults').innerHTML =
+        '<p class="empty-state">Veuillez sélectionner les dates de début et de fin pour l\'analyse personnalisée</p>';
+      if (currentChart) {
+        currentChart.destroy();
+        currentChart = null;
+      }
+      return;
+    }
+    const [startY, startM, startD] = startStr.split('-');
+    const [endY, endM, endD] = endStr.split('-');
+    rangeLabel = `Du ${startD}/${startM}/${startY} au ${endD}/${endM}/${endY}`;
+  }
+
   const filteredJournal = filterByPeriod(journal, period);
 
   if (filteredJournal.length === 0) {
     document.getElementById('analysisResults').innerHTML =
-      '<p class="empty-state">Aucune donnée pour la période sélectionnée</p>';
+      `<p class="empty-state">Aucune donnée pour la période sélectionnée (${rangeLabel})</p>`;
+    if (currentChart) {
+      currentChart.destroy();
+      currentChart = null;
+    }
     return;
   }
 
   // Calculer les statistiques (uniquement pour les thèmes définis)
   const stats = calculateThemeStats(filteredJournal);
 
-  // Afficher les résultats
-  renderAnalysisResults(stats);
+  // Afficher les résultats avec libellé explicite de la période
+  renderAnalysisResults(stats, rangeLabel);
   renderThemeChart(stats);
 }
 
@@ -420,6 +572,21 @@ function filterByPeriod(data, period) {
   const now = new Date();
 
   if (period === 'year') return data;
+
+  if (period === 'custom') {
+    const startStr = document.getElementById('prayerStartDate')?.value;
+    const endStr = document.getElementById('prayerEndDate')?.value;
+
+    if (!startStr || !endStr) return [];
+
+    if (startStr > endStr) return [];
+
+    return data.filter(entry => {
+      const [day, month, year] = entry.Date.split('/');
+      const entryDateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      return entryDateStr >= startStr && entryDateStr <= endStr;
+    });
+  }
 
   return data.filter(entry => {
     const [day, month, year] = entry.Date.split('/');
@@ -475,11 +642,11 @@ function calculateThemeStats(data) {
   return Object.values(stats).sort((a, b) => b.minutes - a.minutes);
 }
 
-function renderAnalysisResults(stats) {
+function renderAnalysisResults(stats, rangeLabel = '') {
   const container = document.getElementById('analysisResults');
 
   if (stats.length === 0) {
-    container.innerHTML = '<p class="empty-state">Aucun sujet de prière suivi trouvé dans les données</p>';
+    container.innerHTML = `<p class="empty-state">Aucun sujet de prière suivi trouvé dans les données (${rangeLabel})</p>`;
     return;
   }
 
@@ -487,6 +654,7 @@ function renderAnalysisResults(stats) {
   const maxMinutes = Math.max(...stats.map(s => s.minutes));
 
   container.innerHTML = `
+    ${rangeLabel ? `<div style="margin-bottom: 1.25rem; background: rgba(99, 102, 241, 0.08); color: var(--primary-dark); padding: 0.6rem 1rem; border-radius: var(--radius-sm); font-weight: 600; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem;"><span>📅</span> Période analysée : ${rangeLabel}</div>` : ''}
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-value">${stats.length}</div>
@@ -821,7 +989,7 @@ function parseChapterCount(ref) {
   //   "... 11-13"  → start=11, end=13
   //   "... 1 - 6" → start=1,  end=6
   //   "... 3"     → start=3,  end=undefined
-  const rangeMatch = trimmed.match(/(\d+)\s*(?:[-–]\s*(\d+))?\s*$/);
+  const rangeMatch = trimmed.match(/(\d+)\s*(?:[-‐‑‒–—]\s*(\d+))?\s*$/);
 
   if (!rangeMatch) {
     // Pas de chiffre du tout → livre à un seul chapitre (ex: "Phm", "Jud")
@@ -842,7 +1010,7 @@ function parseChapterCount(ref) {
 }
 
 export function countPages(txt) {
-  const m = txt.match(/p\s*(\d*)\s-\s*p\s*(\d*)/i);
+  const m = txt.match(/p\s*(\d*)\s*[-‐‑‒–—]\s*p\s*(\d*)/i);
   if (!m) return 0;
   return Number(m[2]) - Number(m[1]) + 1;
 }

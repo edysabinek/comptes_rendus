@@ -82,6 +82,7 @@
                     Enregistrer
                 </button>
             </div>
+            <div id="syntaxErrorsReport"></div>
             <div id="status" class="status-message"></div>
 
             <!-- RÉSUMÉ HEBDOMADAIRE -->
@@ -205,11 +206,23 @@ PS = 05h05 - 05h17 : Moi
                         <option value="week">7 derniers jours glissants</option>
                         <option value="month">Ce mois</option>
                         <option value="year">Cette année</option>
+                        <option value="custom">Autre (Période personnalisée)</option>
                     </select>
                     <button id="analyzeBtn" class="btn btn-primary">
                         <span class="btn-icon">🔍</span>
                         Analyser
                     </button>
+                </div>
+
+                <div id="prayerCustomDates" class="row prayer-custom-dates" style="display: none; margin-bottom: 1.5rem;">
+                    <div class="col col-md-6 form-group">
+                        <label for="prayerStartDate">Date de début</label>
+                        <input type="date" id="prayerStartDate" class="input-field">
+                    </div>
+                    <div class="col col-md-6 form-group">
+                        <label for="prayerEndDate">Date de fin</label>
+                        <input type="date" id="prayerEndDate" class="input-field">
+                    </div>
                 </div>
 
                 <div id="analysisResults" class="analysis-results">
